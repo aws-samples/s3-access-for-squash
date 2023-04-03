@@ -17,7 +17,7 @@ use aws_smithy_http::byte_stream::ByteStream;
 use fs4::tokio::AsyncFileExt;
 use crate::transfer::TransferManager;
 use crate::bindings::sqfs_super_t;
-use crate::squashfs::Archive;
+use crate::squashfs_v1::Archive;
 
 thread_local! {
     pub static CONTEXT: RefCell<Option<Local>> = RefCell::new(None);

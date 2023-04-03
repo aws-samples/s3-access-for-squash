@@ -1,4 +1,4 @@
-pub mod squashfs;
+pub mod squashfs_v1;
 pub mod repo;
 pub mod transfer;
 pub mod stats;
