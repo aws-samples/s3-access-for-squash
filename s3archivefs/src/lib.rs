@@ -2,6 +2,7 @@ pub mod squashfs;
 pub mod repo;
 pub mod transfer;
 pub mod stats;
+pub mod hook_helper;
 
 pub mod bindings {
     #![allow(non_camel_case_types)]
