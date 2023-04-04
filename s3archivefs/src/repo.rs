@@ -17,7 +17,8 @@ use aws_smithy_http::byte_stream::ByteStream;
 use fs4::tokio::AsyncFileExt;
 use crate::transfer::TransferManager;
 use crate::bindings::sqfs_super_t;
-use crate::squashfs_v1::Archive;
+use crate::squashfs_v1;
+use crate::squashfs;
 use crate::ArchiveFs;
 
 thread_local! {
@@ -94,7 +95,7 @@ pub enum HoleDetectMode {
 pub struct Local {
     remote: Option<Remote>,
     filepath: String,
-    arcfs: Rc<Archive>,
+    arcfs: Rc<dyn ArchiveFs>,
     sb: sqfs_super_t,
     hdmode: HoleDetectMode,
     chunk_log: usize,
@@ -107,7 +108,7 @@ const MAX_CHUNK_SIZE: usize = 0x1_0000_0000;
 
 impl Local {
 
-    pub async fn new(filepath: &str, opt_chunk_size: Option<usize>, hdmode: HoleDetectMode, force: bool, init_root: bool, remote: Option<Remote>) -> Self {
+    pub async fn new(filepath: &str, opt_chunk_size: Option<usize>, hdmode: HoleDetectMode, force: bool, init_root: bool, remote: Option<Remote>, new_ver: bool) -> Self {
 
         let path = Path::new(filepath);
 
@@ -173,7 +174,12 @@ impl Local {
             writer.flush().await.expect("failed to flush data to local");
         }
 
-        let arcfs = Rc::new(Archive::new_from_sparse(filepath, init_root));
+        let arcfs: Rc<dyn ArchiveFs>;
+        if new_ver {
+            arcfs = Rc::new(squashfs::Archive::new_from_sparse(filepath, init_root));
+        } else {
+            arcfs = Rc::new(squashfs_v1::Archive::new_from_sparse(filepath, init_root));
+        }
         arcfs.set_hook();
         let sb = arcfs.get_sb();
         let block_log = sb.block_log;

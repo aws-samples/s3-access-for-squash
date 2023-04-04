@@ -100,11 +100,6 @@ impl Drop for Archive {
 }
 
 impl ArchiveFs for Archive {
-    fn new(path: &str) -> Box<Self> {
-        unsafe {
-            Self::new_from_file(path)
-        }
-    }
 
     fn get_sb(&self) -> sqfs_super_t {
         self.sb.clone()
@@ -158,15 +153,26 @@ impl ArchiveFs for Archive {
 
 impl Archive {
 
-    pub unsafe fn new_from_file(filename: &str) -> Box<Self> {
+    pub fn new(path: &str) -> Box<impl ArchiveFs> {
+        Box::new(Self::new_from_sparse(path, false))
+    }
 
-        let mut ctx = Box::new(Self {
+    pub fn new_from_sparse(path: &str, init_root: bool) -> impl ArchiveFs {
+        let _ = init_root;
+        unsafe {
+            Self::new_from_file(path)
+        }
+    }
+
+    unsafe fn new_from_file(filename: &str) -> Self {
+
+        let mut ctx = Self {
             sb: std::mem::zeroed(),
             cfg: std::mem::zeroed(),
             cmp: ptr::null_mut(),
             file: ptr::null_mut(),
             idtbl: ptr::null_mut(),
-        });
+        };
 
         let file = sqfs_open_file(CString::new(filename).unwrap().into_raw(), SQFS_FILE_OPEN_FLAGS_SQFS_FILE_OPEN_READ_ONLY);
         if file.is_null() {

@@ -11,6 +11,7 @@ use libc::{c_void, size_t};
 use nix::sys::stat::SFlag;
 use crate::bindings::*;
 use crate::hook_helper::*;
+use crate::ArchiveFs;
 use super::*;
 
 fn s_isreg(st_mode: sqfs_u16) -> bool {
@@ -44,9 +45,6 @@ impl Drop for Archive {
 }
 
 impl ArchiveFs for Archive {
-    fn new(path: &str) -> Box<Self> {
-        Box::new(Self::new_from_sparse(path, false))
-    }
 
     fn get_sb(&self) -> sqfs_super_t {
         *self.sb.clone()
@@ -97,7 +95,16 @@ impl ArchiveFs for Archive {
 }
 
 impl Archive {
-    pub fn new_from_sparse(path: &str, init_root: bool) -> Self {
+
+    pub fn new(path: &str) -> Box<impl ArchiveFs> {
+        Box::new(Self::new_from_sparse(path, false))
+    }
+
+    pub fn new_from_sparse(path: &str, init_root: bool) -> impl ArchiveFs {
+        Self::do_new_from_sparse(path, init_root)
+    }
+
+    fn do_new_from_sparse(path: &str, init_root: bool) -> Self {
         let f = CString::new(path).unwrap();
         let mut sb = MaybeUninit::<sqfs_super_t>::uninit();
         let mut cfg = MaybeUninit::<sqfs_compressor_config_t>::uninit();

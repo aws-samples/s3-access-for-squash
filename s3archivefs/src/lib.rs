@@ -26,7 +26,6 @@ fn sqfs_destroy<T>(x: *mut T) {
 }
 
 pub trait ArchiveFs {
-    fn new(path: &str) -> Box<Self>;
     fn get_sb(&self) -> sqfs_super_t;
     fn get_archive_file_size(&self) -> usize;
     fn set_hook(&self);

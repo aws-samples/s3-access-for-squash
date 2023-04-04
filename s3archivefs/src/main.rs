@@ -94,7 +94,7 @@ async fn main() {
     let opt = Cmd::from_args();
     match opt {
         Cmd::Meta {file} => {
-            let local = Local::new(&file, None, HoleDetectMode::ALLZERO, false, false, None).await;
+            let local = Local::new(&file, None, HoleDetectMode::ALLZERO, false, false, None, false).await;
             local.print_superblock()
         }
         Cmd::Install {region, bucket, key, file} => {
@@ -128,7 +128,7 @@ async fn main() {
                 hdmode = HoleDetectMode::LSEEK;
             }
 
-            let local = Local::new(&cachefile, chunk_size, hdmode, force, init_root, Some(remote.clone())).await;
+            let local = Local::new(&cachefile, chunk_size, hdmode, force, init_root, Some(remote.clone()), false).await;
             let _l = local.clone();
             CONTEXT.with(|c| *c.borrow_mut() = Some(local));
 
@@ -161,7 +161,7 @@ async fn main() {
                 hdmode = HoleDetectMode::LSEEK;
             }
 
-            let local = Local::new(&cachefile, chunk_size, hdmode, force, true, Some(remote.clone())).await;
+            let local = Local::new(&cachefile, chunk_size, hdmode, force, true, Some(remote.clone()), false).await;
             let _l = local.clone();
             CONTEXT.with(|c| *c.borrow_mut() = Some(local));
             _l.print_list(path);
@@ -180,7 +180,7 @@ async fn main() {
                 hdmode = HoleDetectMode::LSEEK;
             }
 
-            let local = Local::new(&cachefile, chunk_size, hdmode, force, true, Some(remote.clone())).await;
+            let local = Local::new(&cachefile, chunk_size, hdmode, force, true, Some(remote.clone()), false).await;
             let _l = local.clone();
             CONTEXT.with(|c| *c.borrow_mut() = Some(local));
             _l.print_stat(&filepath);
