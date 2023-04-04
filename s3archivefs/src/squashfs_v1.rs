@@ -43,6 +43,59 @@ impl Drop for Archive {
     }
 }
 
+impl ArchiveFs for Archive {
+    fn new(path: &str) -> Box<Self> {
+        Box::new(Self::new_from_sparse(path, false))
+    }
+
+    fn get_sb(&self) -> sqfs_super_t {
+        *self.sb.clone()
+    }
+
+    fn get_archive_file_size(&self) -> usize {
+
+        let file = self.file as *mut sqfs_file_stdio_t;
+        unsafe {
+            (*file).get_size()
+        }
+    }
+
+    fn set_hook(&self) {
+        info!("s3 archive fs hooked");
+        unsafe {
+            // hook read_at
+            let read_at = (*self.file).read_at.replace(archive_read_at);
+            let _ = (*self.file).write_at.replace(
+                std::mem::transmute::<ReadAtType, WriteAtType>(read_at.unwrap())
+            );
+        }
+    }
+
+    fn extract_one(&self, path: &str, outpath: &str) -> Result<usize, Error> {
+        self.do_extract_one(path, outpath)
+    }
+
+    fn print_list(&self, path: Option<String>) {
+        self.do_print_list(path)
+    }
+
+    fn print_file_stat(&self, filepath: &str) {
+        self.do_print_file_stat(filepath)
+    }
+
+    fn file_list(&self, path: Option<String>) -> Vec<(String, libc::stat64)> {
+        unsafe {
+            self.do_file_list(path)
+        }
+    }
+
+    fn file_stat(&self, filepath: &str) -> Option<libc::stat64> {
+        unsafe {
+            self.do_file_stat(filepath)
+        }
+    }
+}
+
 impl Archive {
     pub fn new_from_sparse(path: &str, init_root: bool) -> Self {
         let f = CString::new(path).unwrap();
@@ -150,14 +203,6 @@ impl Archive {
         }
     }
 
-    pub fn get_archive_file_size(&self) -> usize {
-
-        let file = self.file as *mut sqfs_file_stdio_t;
-        unsafe {
-            (*file).get_size()
-        }
-    }
-
     fn collect_xattrs(&self, inode: *const sqfs_inode_generic_t) -> Option<HashMap<Vec<u8>, Vec<u8>>> {
 
         if self.xattr.is_null() {
@@ -218,7 +263,7 @@ impl Archive {
         }
     }
 
-    pub fn extract_one(&self, path: &str, outpath: &str) -> Result<usize, Error> {
+    fn do_extract_one(&self, path: &str, outpath: &str) -> Result<usize, Error> {
 
         let f = CString::new(path).unwrap();
         let mut output = std::fs::File::create(outpath)?;
@@ -358,11 +403,7 @@ impl Archive {
         Ok(filesz)
     }
 
-    pub fn get_sb(&self) -> sqfs_super_t {
-        *self.sb.clone()
-    }
-
-    pub fn print_list(&self, path: Option<String>) {
+    fn do_print_list(&self, path: Option<String>) {
 
         if path.is_none() {
             self.print_write_tree_dfs_root();
@@ -414,7 +455,7 @@ impl Archive {
         }
     }
 
-    pub unsafe fn file_list(&self, path: Option<String>) -> Vec<(String, libc::stat64)> {
+    unsafe fn do_file_list(&self, path: Option<String>) -> Vec<(String, libc::stat64)> {
 
         let f;
         let curr_path;
@@ -446,7 +487,7 @@ impl Archive {
         vec
     }
 
-    pub unsafe fn file_stat(&self, filepath: &str) -> Option<libc::stat64> {
+    unsafe fn do_file_stat(&self, filepath: &str) -> Option<libc::stat64> {
 
         let f = CString::new(filepath).unwrap();
 
@@ -464,7 +505,7 @@ impl Archive {
         Some(Self::stat(n))
     }
 
-    pub fn print_file_stat(&self, filepath: &str) {
+    fn do_print_file_stat(&self, filepath: &str) {
 
         let f = CString::new(filepath).unwrap();
 

@@ -23,3 +23,15 @@ fn sqfs_destroy<T>(x: *mut T) {
         ((*obj).destroy.unwrap())(obj);
     }
 }
+
+pub trait ArchiveFs {
+    fn new(path: &str) -> Box<Self>;
+    fn get_sb(&self) -> sqfs_super_t;
+    fn get_archive_file_size(&self) -> usize;
+    fn set_hook(&self);
+    fn extract_one(&self, path: &str, outpath: &str) -> Result<usize, std::io::Error>;
+    fn print_list(&self, path: Option<String>);
+    fn print_file_stat(&self, filepath: &str);
+    fn file_list(&self, path: Option<String>) -> Vec<(String, libc::stat64)>;
+    fn file_stat(&self, filepath: &str) -> Option<libc::stat64>;
+}

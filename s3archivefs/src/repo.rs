@@ -18,6 +18,7 @@ use fs4::tokio::AsyncFileExt;
 use crate::transfer::TransferManager;
 use crate::bindings::sqfs_super_t;
 use crate::squashfs_v1::Archive;
+use crate::ArchiveFs;
 
 thread_local! {
     pub static CONTEXT: RefCell<Option<Local>> = RefCell::new(None);
@@ -173,6 +174,7 @@ impl Local {
         }
 
         let arcfs = Rc::new(Archive::new_from_sparse(filepath, init_root));
+        arcfs.set_hook();
         let sb = arcfs.get_sb();
         let block_log = sb.block_log;
         let block_size = sb.block_size as usize;
@@ -253,15 +255,11 @@ impl Local {
     }
 
     pub fn file_list(&self, path: Option<String>) -> Vec<(String, libc::stat64)> {
-        unsafe {
-            self.arcfs.file_list(path)
-        }
+        self.arcfs.file_list(path)
     }
 
     pub fn file_stat(&self, filepath: &str) -> Option<libc::stat64> {
-        unsafe {
-            self.arcfs.file_stat(filepath)
-        }
+        self.arcfs.file_stat(filepath)
     }
 
     pub fn is_metadata_area(&self, offset: usize) -> bool {
