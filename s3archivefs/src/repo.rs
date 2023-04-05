@@ -193,9 +193,18 @@ impl Local {
         debug!("block size: {}, block_log: {}, chunk_size: {}, chunk_log: {}",
             block_size, block_log, (1 as usize) << chunk_log, chunk_log);
 
+        let abs_pathbuf;
+        if path.is_relative() {
+            let mut pb = std::env::current_dir().unwrap();
+            pb.push(path);
+            abs_pathbuf = pb.as_path().canonicalize().unwrap();
+        } else {
+            abs_pathbuf = path.to_path_buf();
+        }
+
         Self {
             remote: remote,
-            filepath: filepath.to_string(),
+            filepath: abs_pathbuf.as_path().display().to_string(),
             sb: sb,
             arcfs: arcfs,
             hdmode: hdmode,
