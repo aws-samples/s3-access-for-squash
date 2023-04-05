@@ -257,6 +257,10 @@ impl Local {
         Ok(())
     }
 
+    pub fn get_arcfs(&self) -> *const dyn ArchiveFs {
+        Rc::as_ptr(&self.arcfs)
+    }
+
     pub fn extract_one(&self, path: &str, outpath: &str) -> Result<usize, Error> {
         self.arcfs.extract_one(path, outpath)
     }
