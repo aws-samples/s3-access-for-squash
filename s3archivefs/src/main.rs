@@ -39,7 +39,7 @@ enum Cmd {
         zero: bool,
         #[structopt(short, display_order = 9, help = "force to use remote archive file")]
         force: bool,
-        #[structopt(short="r", display_order = 10, help = "init root hierarchy")]
+        #[structopt(short="i", display_order = 10, help = "init root hierarchy")]
         init_root: bool,
     },
     List {
