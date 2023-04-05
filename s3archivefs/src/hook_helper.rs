@@ -92,6 +92,7 @@ pub extern "C" fn archive_read_at(base: *mut sqfs_file_t, offset: sqfs_u64,
                 local.as_ref().unwrap().request_remote_data_task(start_offset, req_size)
             });
             if res.is_err() {
+                error!("failed to request remote data on S3, err: {:?}", res);
                 return SQFS_ERROR_SQFS_ERROR_IO;
             }
         }
