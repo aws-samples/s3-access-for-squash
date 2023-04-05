@@ -2,4 +2,5 @@
 members = [
     "s3archivefs",
     "s3archivefs-lambda",
+    "s3archivefs-fuse",
 ]

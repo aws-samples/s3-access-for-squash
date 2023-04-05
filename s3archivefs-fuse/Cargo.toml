@@ -1,0 +1,17 @@
+[package]
+name = "s3archivefs-fuse"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+libc = "0.2.140"
+log = "0.4.17"
+env_logger = "0.10.0"
+tokio = { version = "1", features = ["macros", "fs", "io-util", "rt"] }
+aws-config = "0.55.0"
+libfuse-sys = { version = "0.4.0", features = ["fuse_35"] }
+s3archivefs = { version = "0.1.0", path = "../s3archivefs" }
+
+[build-dependencies]
