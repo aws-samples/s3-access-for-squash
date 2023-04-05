@@ -18,14 +18,14 @@ pub type sqfs_readdir_callback_t = Option<
     ) -> c_int,
 >;
 
-pub struct DirReader {
-    ctx: &'static mut Archive,
+pub struct DirReader<'a> {
+    ctx: &'a mut Archive,
     dr: *mut sqfs_dir_reader_t,
 }
 
-impl DirReader {
+impl<'a> DirReader<'a> {
 
-    pub fn new(ctx: &'static mut Archive, dr: *mut sqfs_dir_reader_t) -> Self {
+    pub fn new(ctx: &'a mut Archive, dr: *mut sqfs_dir_reader_t) -> Self {
 
         Self {
             ctx: ctx,
@@ -34,14 +34,14 @@ impl DirReader {
     }
 }
 
-impl Drop for DirReader {
+impl<'a> Drop for DirReader<'a> {
     fn drop(&mut self) {
         sqfs_destroy(self.dr);
         debug!("struct DirReader dropped");
     }
 }
 
-impl Iterator for DirReader {
+impl<'a> Iterator for DirReader<'a> {
     type Item = (String, libc::stat);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -262,7 +262,7 @@ impl Archive {
         off as i32
     }
 
-    pub unsafe fn readdir(&'static mut self, path: *const c_char) -> Option<DirReader> {
+    pub unsafe fn readdir<'a>(&'a mut self, path: *const c_char) -> Option<DirReader> {
 
         debug!("readdir - path: {}", CStr::from_ptr(path).to_str().unwrap());
 
