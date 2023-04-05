@@ -140,7 +140,7 @@ async fn get_object_handler(event: LambdaEvent<S3ObjectLambdaEvent>, env: Env) -
     tokio::fs::create_dir_all(cachefiledir).await.unwrap();
     let remote = repo::Remote::new(&env.region, &repo_bucket, &repo_key).await;
     debug!("Remote object created");
-    let local = repo::Local::new(&cachefile, env.chunk_size, env.hdmode, false, false, Some(remote.clone())).await;
+    let local = repo::Local::new(&cachefile, env.chunk_size, env.hdmode, false, false, Some(remote.clone()), false).await;
     debug!("Local object created");
     let repo = local.clone();
     repo::CONTEXT.with(|c| *c.borrow_mut() = Some(local));
@@ -283,7 +283,7 @@ async fn head_object_handler(event: LambdaEvent<S3ObjectLambdaEvent>, env: Env) 
             repo_prefix, repo_key, cachefiledir, cachefile);
     tokio::fs::create_dir_all(cachefiledir).await.unwrap();
     let remote = repo::Remote::new(&env.region, &repo_bucket, &repo_key).await;
-    let local = repo::Local::new(&cachefile, env.chunk_size, env.hdmode, false, false, Some(remote.clone())).await;
+    let local = repo::Local::new(&cachefile, env.chunk_size, env.hdmode, false, false, Some(remote.clone()), false).await;
     let repo = local.clone();
     repo::CONTEXT.with(|c| *c.borrow_mut() = Some(local));
 
@@ -356,7 +356,7 @@ async fn list_objects_v2_handler(event: LambdaEvent<S3ObjectLambdaEvent>, env: E
     info!("repo prefix: {}, repo_key: {}, cachefiledir: {}, cachefile: {}",
             repo_prefix, repo_key, cachefiledir, cachefile);
     let remote = repo::Remote::new(&env.region, &repo_bucket, &repo_key).await;
-    let local = repo::Local::new(&cachefile, env.chunk_size, env.hdmode, false, false, Some(remote.clone())).await;
+    let local = repo::Local::new(&cachefile, env.chunk_size, env.hdmode, false, false, Some(remote.clone()), false).await;
     let repo = local.clone();
     repo::CONTEXT.with(|c| *c.borrow_mut() = Some(local));
 
