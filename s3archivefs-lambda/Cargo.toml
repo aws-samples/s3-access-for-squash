@@ -1,6 +1,6 @@
 [package]
 name = "s3archivefs-lambda"
-version = "0.1.0"
+version = "0.3.0"
 edition = "2021"
 
 [dependencies]
@@ -25,4 +25,4 @@ rand = "0.8.5"
 log = "0.4.17"
 env_logger = "0.10.0"
 http-range = "0.1.5"
-s3archivefs = { version = "0.1.0", path = "../s3archivefs" }
+s3archivefs = { version = "0.3.0", path = "../s3archivefs" }
