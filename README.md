@@ -25,12 +25,14 @@ This in line with the normal way user interact with S3 and will not break curren
 
 [```s3archivefs-lambda```](s3archivefs-lambda) Reference implementation of S3 Object Lambda to fetch data in archive object
 
+[```s3archivefs-fuse```](s3archivefs-fuse) Local filesystem access for archive object by using FUSE
+
 ## Reference
 https://docs.aws.amazon.com/AmazonS3/latest/userguide/transforming-objects.html
 
 ## Notice
 :warning: S3 Squash Archive target for massive small files archive use case, typically once injected seldom access.
-if your use case need high frequency access full dataset, please upload your file to S3 Object as normal way, by doing this file to S3 object 1x1 mapping, you can get MAX throughput from S3 and it's most cost effective way.
+if your use case need high frequency access full dataset, please upload your file to Amazon S3 as normal way. standard Amazon S3 access provide file to S3 object 1x1 mapping, you can get MAX throughput from S3 and it's always most cost effective way.
 
 ## Security
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
