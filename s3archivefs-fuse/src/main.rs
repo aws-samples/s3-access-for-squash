@@ -94,8 +94,13 @@ unsafe extern "C" fn ops_readdir(path: *const c_char, buf: *mut c_void, filler: 
         None => {},
         Some(dr) => {
             let _ = dr.map(|(name, st)| {
-                filler_func(buf, CString::new(name).expect("failed to cstring").into_raw(),
-                    std::ptr::addr_of!(st), 0, fuse::fuse_fill_dir_flags_FUSE_FILL_DIR_PLUS)
+                // ownership transferr to ptr
+                let name_ptr = CString::new(name).expect("failed to cstring").into_raw();
+
+                filler_func(buf, name_ptr, std::ptr::addr_of!(st), 0, fuse::fuse_fill_dir_flags_FUSE_FILL_DIR_PLUS);
+
+                // retake ptr to free memory
+                let _ = CString::from_raw(name_ptr);
             }).collect::<Vec<_>>();
         }
     }

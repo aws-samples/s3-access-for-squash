@@ -74,6 +74,7 @@ impl<'a> Iterator for DirReader<'a> {
         let st = self.ctx.generic_inode_to_stat(inode);
 
         sqfs_free(ent as *mut c_void);
+        sqfs_free(inode as *mut c_void);
 
         Some((name, st))
 
@@ -174,7 +175,11 @@ impl Archive {
             idtbl: ptr::null_mut(),
         };
 
-        let file = sqfs_open_file(CString::new(filename).unwrap().into_raw(), SQFS_FILE_OPEN_FLAGS_SQFS_FILE_OPEN_READ_ONLY);
+        // ownership transfer to ptr
+        let filename_ptr = CString::new(filename).unwrap().into_raw();
+        let file = sqfs_open_file(filename_ptr, SQFS_FILE_OPEN_FLAGS_SQFS_FILE_OPEN_READ_ONLY);
+        // retake ptr to free memory
+        let _ = CString::from_raw(filename_ptr);
         if file.is_null() {
             panic!("can not open file {}", filename);
         }
@@ -226,6 +231,7 @@ impl Archive {
 
         let ret = sqfs_dir_reader_find_by_path(dr, root, path, ptr::addr_of_mut!(inode));
         sqfs_free(root as *mut c_void);
+        sqfs_destroy(dr as *mut c_void);
         if ret != 0 {
             return -libc::ENOENT;
         }
@@ -250,6 +256,7 @@ impl Archive {
             }
             if diff < 0 {
                 sqfs_free(inode as *mut c_void);
+                sqfs_destroy(data as *mut c_void);
                 return -libc::EIO;
             }
             off += diff as usize;
@@ -259,6 +266,7 @@ impl Archive {
             }
         };
         sqfs_free(inode as *mut c_void);
+        sqfs_destroy(data as *mut c_void);
         off as i32
     }
 
@@ -328,6 +336,7 @@ impl Archive {
                 break;
             }
             if err < 0 {
+                sqfs_destroy(dr as *mut c_void);
                 return err;
             }
             // should_skip
@@ -337,6 +346,7 @@ impl Archive {
             let err = sqfs_dir_reader_get_inode(dr, ptr::addr_of_mut!(inode));
             if err > 0 {
                 sqfs_free(ent as *mut c_void);
+                sqfs_destroy(dr as *mut c_void);
                 return err;
             }
 
@@ -345,6 +355,7 @@ impl Archive {
 
             sqfs_free(ent as *mut c_void);
         }
+        sqfs_destroy(dr as *mut c_void);
 
         0
     }
@@ -364,6 +375,7 @@ impl Archive {
 
         let ret = sqfs_dir_reader_find_by_path(dr, root, path, ptr::addr_of_mut!(inode));
         sqfs_free(root as *mut c_void);
+        sqfs_destroy(dr as *mut c_void);
         if ret != 0 {
             return -libc::ENOENT;
         }
@@ -415,6 +427,7 @@ impl Archive {
 
         let ret = sqfs_dir_reader_find_by_path(dr, root, path, ptr::addr_of_mut!(inode));
         sqfs_free(root as *mut c_void);
+        sqfs_destroy(dr as *mut c_void);
         if ret != 0 {
             return -libc::ENOENT;
         }
@@ -450,6 +463,7 @@ impl Archive {
 
         let ret = sqfs_dir_reader_find_by_path(dr, root, path, ptr::addr_of_mut!(inode));
         sqfs_free(root as *mut c_void);
+        sqfs_destroy(dr as *mut c_void);
         if ret != 0 {
             return -libc::ENODATA;
         }
@@ -550,6 +564,7 @@ impl Archive {
         }
 
         sqfs_free(inode as *mut c_void);
+        sqfs_destroy(xr as *mut c_void);
 
         val_size as c_int
     }
@@ -569,6 +584,7 @@ impl Archive {
 
         let ret = sqfs_dir_reader_find_by_path(dr, root, path, ptr::addr_of_mut!(inode));
         sqfs_free(root as *mut c_void);
+        sqfs_destroy(dr as *mut c_void);
         if ret != 0 {
             return -libc::ENOENT;
         }
@@ -660,6 +676,7 @@ impl Archive {
         }
 
         sqfs_free(inode as *mut c_void);
+        sqfs_destroy(xr as *mut c_void);
 
         list_size as c_int
     }
